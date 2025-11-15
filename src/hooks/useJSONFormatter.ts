@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useEditorStore } from '@/store/editor-store'
 import { JSONFormatter } from '@/core/json-formatter'
 import { JSONValidator } from '@/core/json-validator'
@@ -24,6 +24,7 @@ export function useJSONFormatter() {
     indentSize,
     indentType,
     sortKeys,
+    autoFormat,
     isValid,
     error,
     stats,
@@ -32,10 +33,15 @@ export function useJSONFormatter() {
     setIndentSize,
     setIndentType,
     toggleSortKeys,
+    toggleAutoFormat,
     setValidation,
     updateStats,
     reset,
   } = useEditorStore()
+
+  // Track last input to avoid infinite loops
+  const lastInputRef = useRef('')
+  const autoFormatTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   /**
    * Format JSON with current settings
@@ -212,6 +218,64 @@ export function useJSONFormatter() {
     updateStats(value)
   }, [setInput, updateStats])
 
+  /**
+   * Auto-format when input changes
+   */
+  useEffect(() => {
+    if (!autoFormat || !input || input === lastInputRef.current) {
+      return
+    }
+
+    lastInputRef.current = input
+
+    // Clear previous timeout
+    if (autoFormatTimeoutRef.current) {
+      clearTimeout(autoFormatTimeoutRef.current)
+    }
+
+    // Debounce auto-format
+    autoFormatTimeoutRef.current = setTimeout(() => {
+      const validationResult = validator.validate(input)
+
+      if (validationResult.valid) {
+        try {
+          const options: FormatOptions = {
+            indent: indentSize,
+            indentType: indentType,
+            sortKeys: sortKeys,
+          }
+
+          const formatted = formatter.format(input, options)
+          setOutput(formatted)
+          setValidation(true)
+          updateStats(input, formatted)
+        } catch (error: any) {
+          // Silently fail for auto-format
+          setValidation(false, {
+            message: error.message,
+            line: 1,
+            column: 1,
+            position: 0,
+            snippet: '',
+            suggestion: 'Please check JSON syntax',
+          })
+          setOutput('')
+          updateStats(input, '')
+        }
+      } else {
+        setValidation(false, validationResult.error)
+        setOutput('')
+        updateStats(input, '')
+      }
+    }, 500)
+
+    return () => {
+      if (autoFormatTimeoutRef.current) {
+        clearTimeout(autoFormatTimeoutRef.current)
+      }
+    }
+  }, [input, autoFormat, indentSize, indentType, sortKeys, setOutput, setValidation, updateStats])
+
   return {
     // State
     input,
@@ -219,6 +283,7 @@ export function useJSONFormatter() {
     indentSize,
     indentType,
     sortKeys,
+    autoFormat,
     isValid,
     error,
     stats,
@@ -228,6 +293,7 @@ export function useJSONFormatter() {
     setIndentSize,
     setIndentType,
     toggleSortKeys,
+    toggleAutoFormat,
     reset,
 
     // Actions
