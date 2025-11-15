@@ -23,6 +23,7 @@ interface EditorState {
   indentSize: 2 | 4
   indentType: 'space' | 'tab'
   sortKeys: boolean
+  autoFormat: boolean
 
   // Validation state
   isValid: boolean
@@ -37,6 +38,7 @@ interface EditorState {
   setIndentSize: (size: 2 | 4) => void
   setIndentType: (type: 'space' | 'tab') => void
   toggleSortKeys: () => void
+  toggleAutoFormat: () => void
   setValidation: (isValid: boolean, error?: ValidationError) => void
   updateStats: (input: string, output?: string) => void
   reset: () => void
@@ -51,6 +53,7 @@ const initialState = {
   indentSize: 2 as 2 | 4,
   indentType: 'space' as 'space' | 'tab',
   sortKeys: false,
+  autoFormat: true,
   isValid: true,
   error: null,
   stats: {
@@ -88,6 +91,10 @@ export const useEditorStore = create<EditorState>()(
         set((state) => ({ sortKeys: !state.sortKeys }))
       },
 
+      toggleAutoFormat: () => {
+        set((state) => ({ autoFormat: !state.autoFormat }))
+      },
+
       setValidation: (isValid: boolean, error?: ValidationError) => {
         set({
           isValid,
@@ -110,13 +117,14 @@ export const useEditorStore = create<EditorState>()(
       },
 
       reset: () => {
-        const { indentSize, indentType, sortKeys } = get()
+        const { indentSize, indentType, sortKeys, autoFormat } = get()
         set({
           ...initialState,
           // Preserve persisted settings
           indentSize,
           indentType,
           sortKeys,
+          autoFormat,
         })
       },
     }),
@@ -127,6 +135,7 @@ export const useEditorStore = create<EditorState>()(
         indentSize: state.indentSize,
         indentType: state.indentType,
         sortKeys: state.sortKeys,
+        autoFormat: state.autoFormat,
       }),
     }
   )

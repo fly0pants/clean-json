@@ -19,12 +19,14 @@ function App() {
     stats,
     isValid,
     error,
+    autoFormat,
     setInput,
     format,
     compress,
     convertStringToObject,
     convertObjectToString,
     autoConvert,
+    toggleAutoFormat,
   } = useJSONFormatter()
   const { setOutput, updateStats } = useEditorStore()
   const { items: historyItems, addItem, deleteItem, clearHistory } = useHistoryStore()
@@ -116,19 +118,30 @@ function App() {
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-primary-bg text-text-primary">
       <Toaster position="top-right" />
-      <header className="flex h-16 items-center justify-between border-b border-border-default bg-primary-surface px-6">
+      <header className="flex h-16 items-center justify-between border-b border-border-default bg-primary-surface px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-pink text-2xl font-bold text-white shadow-glow-blue">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-pink text-xl sm:text-2xl font-bold text-white shadow-glow-blue">
               {'{}'}
             </div>
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-neon-blue">Clean JSON</h1>
               <p className="text-xs text-text-secondary">Format & Validate with Style</p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <button
+            onClick={toggleAutoFormat}
+            className={`btn-ghost flex items-center gap-2 text-xs sm:text-sm ${autoFormat ? 'text-neon-green' : 'text-text-secondary'}`}
+            aria-label="Toggle auto format"
+            title={`Auto format: ${autoFormat ? 'ON' : 'OFF'}`}
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span className="hidden md:inline">{autoFormat ? 'Auto' : 'Manual'}</span>
+          </button>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="btn-ghost relative" aria-label="Toggle history panel">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -140,44 +153,44 @@ function App() {
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
         </div>
       </header>
-      <div className="border-b border-border-default bg-primary-surface px-6 py-3">
+      <div className="border-b border-border-default bg-primary-surface px-2 sm:px-6 py-3 overflow-x-auto">
         <ActionButtons onFormat={handleFormat} onCompress={handleCompress} onStringToObject={handleStringToObject} onObjectToString={handleObjectToString} onAutoConvert={handleAutoConvert} onClear={handleClear} />
       </div>
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
         <div className="flex flex-1 flex-col">
-          <div className="flex flex-1 overflow-hidden">
-            <div className="flex flex-1 flex-col border-r border-border-default">
+          <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+            <div className="flex flex-1 flex-col border-b md:border-b-0 md:border-r border-border-default min-h-[300px] md:min-h-0">
               <div className="flex items-center justify-between border-b border-border-default bg-primary-surface px-4 py-2">
                 <h2 className="text-sm font-semibold text-text-secondary">Input</h2>
-                <span className="text-xs text-text-disabled">Paste or type JSON here</span>
+                <span className="text-xs text-text-disabled hidden sm:inline">Paste or type JSON here</span>
               </div>
               <div className="flex-1 overflow-hidden">
                 <Editor height="100%" language="json" value={input} onChange={(value) => setInput(value || '')} theme={editorTheme} options={editorOptions} />
               </div>
             </div>
-            <div className="flex flex-1 flex-col">
+            <div className="flex flex-1 flex-col min-h-[300px] md:min-h-0">
               <div className="flex items-center justify-between border-b border-border-default bg-primary-surface px-4 py-2">
                 <h2 className="text-sm font-semibold text-text-secondary">Output</h2>
-                {error && <div className="flex items-center gap-2 text-xs text-neon-red"><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Error: {error.message}</div>}
-                {isValid && !error && output && <div className="flex items-center gap-2 text-xs text-neon-green"><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Valid JSON</div>}
+                {error && <div className="flex items-center gap-2 text-xs text-neon-red truncate max-w-[200px] sm:max-w-none"><svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="hidden sm:inline">Error: {error.message}</span><span className="sm:hidden">Error</span></div>}
+                {isValid && !error && output && <div className="flex items-center gap-2 text-xs text-neon-green"><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="hidden sm:inline">Valid JSON</span><span className="sm:hidden">✓</span></div>}
               </div>
               <div className="flex-1 overflow-hidden">
                 <Editor height="100%" language="json" value={output} onChange={(value) => setOutput(value || '')} theme={editorTheme} options={editorOptions} />
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-border-default bg-primary-sidebar px-6 py-2 text-xs text-text-secondary">
-            <div className="flex items-center gap-6">
+          <div className="flex items-center justify-between border-t border-border-default bg-primary-sidebar px-4 sm:px-6 py-2 text-xs text-text-secondary">
+            <div className="flex items-center gap-4 sm:gap-6">
               <span>Lines: {stats.lines}</span>
               <span>Size: {formatBytes(stats.size)}</span>
             </div>
             <div className="flex items-center gap-2">
-              {isValid ? <span className="text-neon-green"> Valid</span> : error ? <span className="text-neon-red"> Invalid</span> : <span className="text-text-disabled">� No validation</span>}
+              {isValid ? <span className="text-neon-green">✓ Valid</span> : error ? <span className="text-neon-red">✗ Invalid</span> : <span className="text-text-disabled">⚪ No validation</span>}
             </div>
           </div>
         </div>
         {sidebarOpen && (
-          <aside className="w-80 border-l border-border-default bg-primary-sidebar">
+          <aside className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-border-default bg-primary-sidebar max-h-[300px] lg:max-h-none">
             <HistoryPanel items={historyItems} onItemClick={handleHistoryItemClick} onItemDelete={handleHistoryItemDelete} onClearAll={handleClearAllHistory} />
           </aside>
         )}
