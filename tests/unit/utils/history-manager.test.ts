@@ -381,9 +381,7 @@ describe('HistoryManager', () => {
       vi.useFakeTimers()
 
       historyManager.addItem('{"first":1}')
-      vi.advanceTimersByTime(100) // Ensure different timestamps
       historyManager.addItem('{"second":2}')
-      vi.advanceTimersByTime(100)
       historyManager.addItem('{"third":3}')
 
       const items = historyManager.getItems()
