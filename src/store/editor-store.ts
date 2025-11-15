@@ -12,15 +12,6 @@ interface EditorStats {
 }
 
 /**
- * Editor settings (persisted)
- */
-interface EditorSettings {
-  indentSize: 2 | 4
-  indentType: 'space' | 'tab'
-  sortKeys: boolean
-}
-
-/**
  * Editor state
  */
 interface EditorState {

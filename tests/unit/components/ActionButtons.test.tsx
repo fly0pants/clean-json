@@ -37,7 +37,7 @@ describe('ActionButtons', () => {
     })
 
     it('should render buttons with icons', () => {
-      const { container } = render(<ActionButtons {...mockHandlers} />)
+      const { container: _container } = render(<ActionButtons {...mockHandlers} />)
 
       // Check that buttons contain icon elements (svg or span)
       const buttons = screen.getAllByRole('button')
@@ -153,14 +153,14 @@ describe('ActionButtons', () => {
 
   describe('Button Variants', () => {
     it('should render primary variant for main actions', () => {
-      const { container } = render(<ActionButtons {...mockHandlers} />)
+      const { container: _container } = render(<ActionButtons {...mockHandlers} />)
 
       const formatButton = screen.getByRole('button', { name: /format/i })
       expect(formatButton).toHaveClass('btn-primary')
     })
 
     it('should render secondary variant for secondary actions', () => {
-      const { container } = render(<ActionButtons {...mockHandlers} />)
+      const { container: _container } = render(<ActionButtons {...mockHandlers} />)
 
       const clearButton = screen.getByRole('button', { name: /clear/i })
       expect(clearButton).toHaveClass('btn-secondary')

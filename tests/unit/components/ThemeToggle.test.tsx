@@ -185,7 +185,7 @@ describe('ThemeToggle', () => {
 
   describe('Animation', () => {
     it('should have transition classes for smooth animation', () => {
-      const { container } = render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
+      const { container: _container } = render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
 
       const button = screen.getByRole('button')
       const classes = button.className

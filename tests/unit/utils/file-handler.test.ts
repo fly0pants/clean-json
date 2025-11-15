@@ -117,7 +117,7 @@ describe('FileHandler', () => {
   describe('Load from URL', () => {
     it('should fetch JSON from URL', async () => {
       const mockData = { name: 'John' }
-      global.fetch = vi.fn().mockResolvedValue({
+      ;(global as any).fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => mockData,
       })
@@ -128,7 +128,7 @@ describe('FileHandler', () => {
     })
 
     it('should handle fetch error', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      ;(global as any).fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 404,
       })
@@ -139,7 +139,7 @@ describe('FileHandler', () => {
     })
 
     it('should handle network error', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+      ;(global as any).fetch = vi.fn().mockRejectedValue(new Error('Network error'))
 
       await expect(
         fileHandler.loadFromURL('https://example.com/data.json')

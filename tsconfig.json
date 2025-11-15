@@ -25,10 +25,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@tests/*": ["./tests/*"]
-    },
-
-    /* Type definitions */
-    "types": ["vitest/globals", "@testing-library/jest-dom"]
+    }
   },
   "include": ["src", "tests"],
   "exclude": ["node_modules", "dist"],

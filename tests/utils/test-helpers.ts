@@ -49,7 +49,7 @@ export function createFormattedJSON(
   indent: number,
   indentType: 'space' | 'tab' = 'space'
 ): string {
-  const indentStr = indentType === 'space' ? ' '.repeat(indent) : '\t'
+  const _indentStr = indentType === 'space' ? ' '.repeat(indent) : '\t'
   return JSON.stringify(obj, null, indentType === 'space' ? indent : '\t')
 }
 

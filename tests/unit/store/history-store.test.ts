@@ -24,7 +24,7 @@ describe('HistoryStore', () => {
 
   describe('Add Item', () => {
     it('should add new item', () => {
-      const { addItem, items } = useHistoryStore.getState()
+      const { addItem, items: _items } = useHistoryStore.getState()
 
       addItem('{"name":"John"}')
 
