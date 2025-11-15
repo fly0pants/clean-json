@@ -42,7 +42,7 @@ export class JSONValidator {
     const message = error.message
 
     // Extract position from error message if available
-    const position = this.extractPosition(message)
+    const position = this.extractPosition(message, input)
 
     // Calculate line and column
     const { line, column } = this.getLineColumn(input, position)
@@ -66,7 +66,7 @@ export class JSONValidator {
   /**
    * Extract position from error message
    */
-  private extractPosition(message: string): number {
+  private extractPosition(message: string, input: string): number {
     // Try to extract position from various error message formats
     const posMatch = message.match(/position (\d+)/i)
     if (posMatch) {
@@ -77,6 +77,54 @@ export class JSONValidator {
     const atPosMatch = message.match(/at position (\d+)/i)
     if (atPosMatch) {
       return parseInt(atPosMatch[1], 10)
+    }
+
+    // Try to extract context from error message like: "Unexpected token 'N', ...\"city\": NYC..."
+    // Look for the pattern: '...\"<context>\"...'
+    const contextMatch = message.match(/\.\.\.(.+?)\.\.\./)
+    if (contextMatch) {
+      const context = contextMatch[1]
+      // Find this context in the input
+      const contextPos = input.indexOf(context)
+      if (contextPos !== -1) {
+        // Find the first non-whitespace character in the context
+        // This is likely where the error is
+        const trimmedContext = context.trimStart()
+        const offset = context.length - trimmedContext.length
+        return contextPos + offset
+      }
+    }
+
+    // Try to find error character in the message
+    const tokenMatch = message.match(/Unexpected token '(.)'/)
+    if (tokenMatch) {
+      const token = tokenMatch[1]
+      // Find the first occurrence of this token that's not in a string
+      let inString = false
+      let escapeNext = false
+
+      for (let i = 0; i < input.length; i++) {
+        const char = input[i]
+
+        if (escapeNext) {
+          escapeNext = false
+          continue
+        }
+
+        if (char === '\\') {
+          escapeNext = true
+          continue
+        }
+
+        if (char === '"') {
+          inString = !inString
+          continue
+        }
+
+        if (!inString && char === token) {
+          return i
+        }
+      }
     }
 
     return 0

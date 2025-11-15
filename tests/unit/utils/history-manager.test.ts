@@ -378,6 +378,8 @@ describe('HistoryManager', () => {
     })
 
     it('should return items in chronological order (newest first)', () => {
+      vi.useFakeTimers()
+
       historyManager.addItem('{"first":1}')
       historyManager.addItem('{"second":2}')
       historyManager.addItem('{"third":3}')
@@ -386,6 +388,8 @@ describe('HistoryManager', () => {
       expect(items[0].content).toBe('{"third":3}')
       expect(items[1].content).toBe('{"second":2}')
       expect(items[2].content).toBe('{"first":1}')
+
+      vi.useRealTimers()
     })
 
     it('should return copy of items (not reference)', () => {
