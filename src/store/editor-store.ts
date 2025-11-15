@@ -5,19 +5,10 @@ import type { ValidationError } from '@/types/json.types'
 /**
  * Editor statistics
  */
-interface EditorStats {
+export interface EditorStats {
   lines: number
   size: number
   compressedSize: number
-}
-
-/**
- * Editor settings (persisted)
- */
-interface EditorSettings {
-  indentSize: 2 | 4
-  indentType: 'space' | 'tab'
-  sortKeys: boolean
 }
 
 /**

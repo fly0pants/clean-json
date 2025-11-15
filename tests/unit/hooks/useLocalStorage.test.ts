@@ -215,7 +215,7 @@ describe('useLocalStorage', () => {
       const { result: result1 } = renderHook(() =>
         useLocalStorage('shared-key', 'initial')
       )
-      const { result: result2 } = renderHook(() =>
+      renderHook(() =>
         useLocalStorage('shared-key', 'initial')
       )
 

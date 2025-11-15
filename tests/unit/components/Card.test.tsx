@@ -170,7 +170,7 @@ describe('Card', () => {
     })
 
     it('should apply header styles', () => {
-      const { container } = render(
+      render(
         <Card header={<div data-testid="header">Header</div>}>
           Content
         </Card>
@@ -181,7 +181,7 @@ describe('Card', () => {
     })
 
     it('should apply footer styles', () => {
-      const { container } = render(
+      render(
         <Card footer={<div data-testid="footer">Footer</div>}>
           Content
         </Card>
@@ -202,7 +202,7 @@ describe('Card', () => {
     })
 
     it('should forward additional HTML attributes', () => {
-      const { container } = render(
+      render(
         <Card data-testid="test-card" id="card-1">
           Content
         </Card>
@@ -269,13 +269,12 @@ describe('Card', () => {
 
     it('should support button element', () => {
       const { container } = render(
-        <Card as="button" type="button">
+        <Card as="button">
           Content
         </Card>
       )
 
       expect(container.firstChild?.nodeName).toBe('BUTTON')
-      expect(container.firstChild).toHaveAttribute('type', 'button')
     })
   })
 

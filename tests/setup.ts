@@ -53,10 +53,10 @@ const localStorageMock = (() => {
   }
 })()
 
-global.localStorage = localStorageMock as Storage
+globalThis.localStorage = localStorageMock as Storage
 
 // Mock Blob for file size calculations
-global.Blob = class Blob {
+globalThis.Blob = class Blob {
   constructor(
     public parts: any[],
     public options?: BlobPropertyBag
@@ -77,7 +77,6 @@ global.Blob = class Blob {
 }
 
 // Mock performance.now() for consistent timing tests
-const originalPerformanceNow = performance.now.bind(performance)
 let mockTime = 0
 
 performance.now = vi.fn(() => {
@@ -85,7 +84,7 @@ performance.now = vi.fn(() => {
 })
 
 // Helper to advance mock time
-global.advanceMockTime = (ms: number) => {
+globalThis.advanceMockTime = (ms: number) => {
   mockTime += ms
 }
 
