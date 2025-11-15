@@ -12,6 +12,7 @@ const MAX_SIZE = 1024 * 1024 // 1MB
 export class HistoryManager {
   private items: HistoryList = []
   private privacyMode: boolean = false
+  private idCounter: number = 0
 
   constructor() {
     this.loadPrivacyMode()
@@ -43,12 +44,13 @@ export class HistoryManager {
       isValid = false
     }
 
-    // Create history item
+    // Create history item with unique ID
+    const timestamp = Date.now()
     const item: HistoryItem = {
-      id: Date.now().toString(),
+      id: `${timestamp}-${this.idCounter++}`,
       content,
       preview: this.createPreview(content),
-      timestamp: Date.now(),
+      timestamp,
       size,
       isValid,
     }

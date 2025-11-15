@@ -237,7 +237,10 @@ describe('JSONCompressor', () => {
       const input = '{"number": 1.5e10}'
       const compressed = compressor.compress(input)
 
-      expect(compressed).toContain('1.5e')
+      // JSON.parse/stringify standardizes number format
+      // 1.5e10 becomes 15000000000
+      const parsed = JSON.parse(compressed)
+      expect(parsed.number).toBe(15000000000)
     })
   })
 
