@@ -237,7 +237,8 @@ describe('JSONCompressor', () => {
       const input = '{"number": 1.5e10}'
       const compressed = compressor.compress(input)
 
-      expect(compressed).toContain('1.5e')
+      // JSON.stringify converts scientific notation to regular number
+      expect(compressed).toBe('{"number":15000000000}')
     })
   })
 

@@ -43,9 +43,9 @@ export class HistoryManager {
       isValid = false
     }
 
-    // Create history item
+    // Create history item with unique ID (timestamp + random string)
     const item: HistoryItem = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       content,
       preview: this.createPreview(content),
       timestamp: Date.now(),
