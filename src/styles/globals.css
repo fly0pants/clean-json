@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Custom Properties for easy theming */
+:root {
+  /* Dark Theme (Default) */
+  --color-bg-primary: #0a0e27;
+  --color-bg-surface: #1a1f3a;
+  --color-bg-elevated: #252b47;
+  --color-bg-sidebar: #0f1229;
+
+  --color-neon-blue: #00d4ff;
+  --color-neon-pink: #ff006e;
+  --color-neon-green: #00ff9f;
+  --color-neon-yellow: #ffb800;
+  --color-neon-red: #ff3366;
+
+  --color-text-primary: #e0e6ff;
+  --color-text-secondary: #8892b0;
+  --color-text-disabled: #4a5578;
+
+  --color-border-default: rgba(0, 212, 255, 0.2);
+  --color-border-hover: rgba(0, 212, 255, 0.5);
+  --color-border-focus: rgba(0, 212, 255, 1);
+}
+
+/* Light Theme Override */
+.light {
+  --color-bg-primary: #f5f7ff;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #e8ecff;
+  --color-bg-sidebar: #eef1ff;
+
+  --color-neon-blue: #0066ff;
+  --color-neon-pink: #ff0055;
+  --color-neon-green: #00c896;
+  --color-neon-yellow: #ff8800;
+  --color-neon-red: #dd0000;
+
+  --color-text-primary: #1a1f3a;
+  --color-text-secondary: #5a6580;
+  --color-text-disabled: #9ea8c0;
+
+  --color-border-default: rgba(0, 102, 255, 0.2);
+  --color-border-hover: rgba(0, 102, 255, 0.5);
+  --color-border-focus: rgba(0, 102, 255, 1);
+}
+
+@layer base {
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-default);
+    border-radius: 6px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-hover);
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-default) transparent;
+  }
+}
+
+@layer components {
+  /* Button Base Styles */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 150ms ease-out;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: var(--color-neon-blue);
+    ring-offset: 2px;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: linear-gradient(to right, var(--color-neon-blue), var(--color-neon-pink));
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  }
+
+  .btn-primary:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--color-border-default);
+    color: var(--color-neon-blue);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--color-neon-blue);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-text-secondary);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-neon-blue);
+  }
+}
+
+@layer utilities {
+  /* Neon Glow Utilities */
+  .glow-blue {
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5), 0 0 20px rgba(0, 212, 255, 0.3),
+      0 0 30px rgba(0, 212, 255, 0.1);
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 10px rgba(255, 0, 110, 0.5), 0 0 20px rgba(255, 0, 110, 0.3);
+  }
+
+  .glow-green {
+    box-shadow: 0 0 10px rgba(0, 255, 159, 0.5), 0 0 20px rgba(0, 255, 159, 0.3);
+  }
+}
+
+/* Animation for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

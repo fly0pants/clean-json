@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Clean JSON - Modern JSON Formatter, Validator & Beautifier with cyberpunk design. Format, validate, compress and convert JSON online." />
+    <meta name="keywords" content="JSON formatter, JSON validator, JSON beautifier, JSON minifier, online JSON tool" />
+    <meta name="author" content="Clean JSON Team" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Clean JSON - Format & Validate with Style" />
+    <meta property="og:description" content="Modern JSON tool with cyberpunk aesthetics. Format, validate, and compress JSON instantly." />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0a0e27" />
+
+    <!-- Preconnect to CDN for Monaco Editor (Performance Optimization) -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+
+    <!-- Preload Critical Fonts (Optional - if using local fonts) -->
+    <!-- <link rel="preload" href="/fonts/fira-code.woff2" as="font" type="font/woff2" crossorigin /> -->
+
+    <title>Clean JSON - Format & Validate JSON</title>
+  </head>
+  <body class="dark">
+    <!-- Root Container -->
+    <div id="root"></div>
+
+    <!-- Main Application Entry Point -->
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Noscript Fallback -->
+    <noscript>
+      <div style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: #0a0e27;
+        color: #e0e6ff;
+        font-family: sans-serif;
+        text-align: center;
+        padding: 2rem;
+      ">
+        <div>
+          <h1 style="color: #00d4ff; margin-bottom: 1rem;">Clean JSON</h1>
+          <p style="margin-bottom: 0.5rem;">
+            This application requires JavaScript to run.
+          </p>
+          <p style="color: #8892b0;">
+            Please enable JavaScript in your browser settings.
+          </p>
+        </div>
+      </div>
+    </noscript>
+  </body>
+</html>
