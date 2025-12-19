@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import Editor from '@monaco-editor/react'
 import { ActionButtons } from './components/Toolbar/ActionButtons'
+import { UtilityButtons } from './components/Toolbar/UtilityButtons'
 import { ThemeToggle } from './components/Toolbar/ThemeToggle'
 import { HistoryPanel } from './components/Sidebar/HistoryPanel'
 import { useTheme } from './hooks/useTheme'
@@ -9,7 +10,18 @@ import { useJSONFormatter } from './hooks/useJSONFormatter'
 import { useEditorStore } from './store/editor-store'
 import { useHistoryStore } from './store/history-store'
 import { formatBytes } from './utils/format-bytes'
+import { Clipboard } from './utils/clipboard'
+import { FileHandler } from './utils/file-handler'
+import { UnicodeConverter, CommentRemover, JSONToXMLConverter, JSONToCSVConverter } from './core/json-utils'
 import type { HistoryItem } from './types/history.types'
+
+// Initialize utilities
+const clipboard = new Clipboard()
+const fileHandler = new FileHandler()
+const unicodeConverter = new UnicodeConverter()
+const commentRemover = new CommentRemover()
+const xmlConverter = new JSONToXMLConverter()
+const csvConverter = new JSONToCSVConverter()
 
 function App() {
   const { theme, toggleTheme } = useTheme()
@@ -28,7 +40,7 @@ function App() {
     autoConvert,
     toggleAutoFormat,
   } = useJSONFormatter()
-  const { setOutput, updateStats } = useEditorStore()
+  const { setOutput, updateStats, setValidation } = useEditorStore()
   const { items: historyItems, addItem, deleteItem, clearHistory } = useHistoryStore()
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
@@ -57,7 +69,7 @@ function App() {
     format()
     if (output) {
       addItem(output)
-      toast.success('JSON formatted successfully!')
+      toast.success('JSON 格式化成功!')
     }
   }
 
@@ -65,7 +77,7 @@ function App() {
     compress()
     if (output) {
       addItem(output)
-      toast.success('JSON compressed successfully!')
+      toast.success('JSON 压缩成功!')
     }
   }
 
@@ -73,7 +85,7 @@ function App() {
     convertStringToObject()
     if (output) {
       addItem(output)
-      toast.success('Converted string to object!')
+      toast.success('已转换为对象!')
     }
   }
 
@@ -81,7 +93,7 @@ function App() {
     convertObjectToString()
     if (output) {
       addItem(output)
-      toast.success('Converted object to string!')
+      toast.success('已转换为字符串!')
     }
   }
 
@@ -89,7 +101,7 @@ function App() {
     autoConvert()
     if (output) {
       addItem(output)
-      toast.success('Auto-converted successfully!')
+      toast.success('自动转换成功!')
     }
   }
 
@@ -97,22 +109,155 @@ function App() {
     setInput('')
     setOutput('')
     updateStats('', '')
-    toast.success('Cleared!')
+    toast.success('已清空!')
+  }
+
+  // Utility handlers
+  const handleCopy = async () => {
+    const textToCopy = output || input
+    if (!textToCopy) {
+      toast.error('没有内容可复制')
+      return
+    }
+    const success = await clipboard.copy(textToCopy)
+    if (success) {
+      toast.success('已复制到剪贴板!')
+    } else {
+      toast.error('复制失败')
+    }
+  }
+
+  const handleDownload = () => {
+    const contentToDownload = output || input
+    if (!contentToDownload) {
+      toast.error('没有内容可下载')
+      return
+    }
+    const timestamp = new Date().toISOString().slice(0, 10)
+    fileHandler.downloadJSON(contentToDownload, `json-${timestamp}.json`)
+    toast.success('文件下载成功!')
+  }
+
+  const handleUpload = (content: string) => {
+    setInput(content)
+    toast.success('文件上传成功!')
+  }
+
+  const handleLoadFromURL = async (url: string) => {
+    try {
+      const content = await fileHandler.loadFromURL(url)
+      // Format the loaded JSON
+      const formatted = JSON.stringify(JSON.parse(content), null, 2)
+      setInput(formatted)
+      toast.success('从 URL 加载成功!')
+    } catch (err: any) {
+      toast.error(`加载失败: ${err.message}`)
+    }
+  }
+
+  const handleToUnicode = () => {
+    try {
+      const sourceText = input
+      if (!sourceText) {
+        toast.error('请先输入 JSON')
+        return
+      }
+      const result = unicodeConverter.toUnicode(sourceText)
+      setOutput(result)
+      setValidation(true)
+      updateStats(sourceText, result)
+      addItem(result)
+      toast.success('Unicode 转义成功!')
+    } catch (err: any) {
+      toast.error(`转换失败: ${err.message}`)
+    }
+  }
+
+  const handleFromUnicode = () => {
+    try {
+      const sourceText = input
+      if (!sourceText) {
+        toast.error('请先输入 JSON')
+        return
+      }
+      const result = unicodeConverter.fromUnicode(sourceText)
+      setOutput(result)
+      setValidation(true)
+      updateStats(sourceText, result)
+      addItem(result)
+      toast.success('Unicode 还原成功!')
+    } catch (err: any) {
+      toast.error(`转换失败: ${err.message}`)
+    }
+  }
+
+  const handleRemoveComments = () => {
+    try {
+      const sourceText = input
+      if (!sourceText) {
+        toast.error('请先输入 JSON')
+        return
+      }
+      const result = commentRemover.removeComments(sourceText)
+      // Format the result
+      const formatted = JSON.stringify(JSON.parse(result), null, 2)
+      setOutput(formatted)
+      setValidation(true)
+      updateStats(sourceText, formatted)
+      addItem(formatted)
+      toast.success('注释已去除!')
+    } catch (err: any) {
+      toast.error(`处理失败: ${err.message}`)
+    }
+  }
+
+  const handleToXML = () => {
+    try {
+      const sourceText = input
+      if (!sourceText) {
+        toast.error('请先输入 JSON')
+        return
+      }
+      const result = xmlConverter.convert(sourceText)
+      setOutput(result)
+      setValidation(true)
+      updateStats(sourceText, result)
+      toast.success('已转换为 XML!')
+    } catch (err: any) {
+      toast.error(`转换失败: ${err.message}`)
+    }
+  }
+
+  const handleToCSV = () => {
+    try {
+      const sourceText = input
+      if (!sourceText) {
+        toast.error('请先输入 JSON')
+        return
+      }
+      const result = csvConverter.convert(sourceText)
+      setOutput(result)
+      setValidation(true)
+      updateStats(sourceText, result)
+      toast.success('已转换为 CSV!')
+    } catch (err: any) {
+      toast.error(`转换失败: ${err.message}`)
+    }
   }
 
   const handleHistoryItemClick = (item: HistoryItem) => {
     setInput(item.content)
-    toast.success('Loaded from history!')
+    toast.success('已从历史记录加载!')
   }
 
   const handleHistoryItemDelete = (id: string) => {
     deleteItem(id)
-    toast.success('Deleted from history!')
+    toast.success('已从历史记录删除!')
   }
 
   const handleClearAllHistory = () => {
     clearHistory()
-    toast.success('History cleared!')
+    toast.success('历史记录已清空!')
   }
 
   return (
@@ -135,12 +280,12 @@ function App() {
             onClick={toggleAutoFormat}
             className={`btn-ghost flex items-center gap-2 text-xs sm:text-sm ${autoFormat ? 'text-neon-green' : 'text-text-secondary'}`}
             aria-label="Toggle auto format"
-            title={`Auto format: ${autoFormat ? 'ON' : 'OFF'}`}
+            title={`自动格式化: ${autoFormat ? '开启' : '关闭'}`}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span className="hidden md:inline">{autoFormat ? 'Auto' : 'Manual'}</span>
+            <span className="hidden md:inline">{autoFormat ? '自动' : '手动'}</span>
           </button>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="btn-ghost relative" aria-label="Toggle history panel">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,16 +298,40 @@ function App() {
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
         </div>
       </header>
+
+      {/* Toolbar */}
       <div className="border-b border-border-default bg-primary-surface px-2 sm:px-6 py-3 overflow-x-auto">
-        <ActionButtons onFormat={handleFormat} onCompress={handleCompress} onStringToObject={handleStringToObject} onObjectToString={handleObjectToString} onAutoConvert={handleAutoConvert} onClear={handleClear} />
+        <div className="flex flex-wrap items-center gap-4">
+          <ActionButtons
+            onFormat={handleFormat}
+            onCompress={handleCompress}
+            onStringToObject={handleStringToObject}
+            onObjectToString={handleObjectToString}
+            onAutoConvert={handleAutoConvert}
+            onClear={handleClear}
+          />
+          <div className="hidden sm:block w-px h-8 bg-border-default" />
+          <UtilityButtons
+            onCopy={handleCopy}
+            onDownload={handleDownload}
+            onUpload={handleUpload}
+            onLoadFromURL={handleLoadFromURL}
+            onToUnicode={handleToUnicode}
+            onFromUnicode={handleFromUnicode}
+            onRemoveComments={handleRemoveComments}
+            onToXML={handleToXML}
+            onToCSV={handleToCSV}
+          />
+        </div>
       </div>
+
       <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
         <div className="flex flex-1 flex-col">
           <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
             <div className="flex flex-1 flex-col border-b md:border-b-0 md:border-r border-border-default min-h-[300px] md:min-h-0">
               <div className="flex items-center justify-between border-b border-border-default bg-primary-surface px-4 py-2">
-                <h2 className="text-sm font-semibold text-text-secondary">Input</h2>
-                <span className="text-xs text-text-disabled hidden sm:inline">Paste or type JSON here</span>
+                <h2 className="text-sm font-semibold text-text-secondary">输入</h2>
+                <span className="text-xs text-text-disabled hidden sm:inline">在此粘贴或输入 JSON</span>
               </div>
               <div className="flex-1 overflow-hidden">
                 <Editor height="100%" language="json" value={input} onChange={(value) => setInput(value || '')} theme={editorTheme} options={editorOptions} />
@@ -170,9 +339,9 @@ function App() {
             </div>
             <div className="flex flex-1 flex-col min-h-[300px] md:min-h-0">
               <div className="flex items-center justify-between border-b border-border-default bg-primary-surface px-4 py-2">
-                <h2 className="text-sm font-semibold text-text-secondary">Output</h2>
-                {error && <div className="flex items-center gap-2 text-xs text-neon-red truncate max-w-[200px] sm:max-w-none"><svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="hidden sm:inline">Error: {error.message}</span><span className="sm:hidden">Error</span></div>}
-                {isValid && !error && output && <div className="flex items-center gap-2 text-xs text-neon-green"><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="hidden sm:inline">Valid JSON</span><span className="sm:hidden">✓</span></div>}
+                <h2 className="text-sm font-semibold text-text-secondary">输出</h2>
+                {error && <div className="flex items-center gap-2 text-xs text-neon-red truncate max-w-[200px] sm:max-w-none"><svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="hidden sm:inline">错误: {error.message}</span><span className="sm:hidden">错误</span></div>}
+                {isValid && !error && output && <div className="flex items-center gap-2 text-xs text-neon-green"><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="hidden sm:inline">有效 JSON</span><span className="sm:hidden">✓</span></div>}
               </div>
               <div className="flex-1 overflow-hidden">
                 <Editor height="100%" language="json" value={output} onChange={(value) => setOutput(value || '')} theme={editorTheme} options={editorOptions} />
@@ -181,11 +350,11 @@ function App() {
           </div>
           <div className="flex items-center justify-between border-t border-border-default bg-primary-sidebar px-4 sm:px-6 py-2 text-xs text-text-secondary">
             <div className="flex items-center gap-4 sm:gap-6">
-              <span>Lines: {stats.lines}</span>
-              <span>Size: {formatBytes(stats.size)}</span>
+              <span>行数: {stats.lines}</span>
+              <span>大小: {formatBytes(stats.size)}</span>
             </div>
             <div className="flex items-center gap-2">
-              {isValid ? <span className="text-neon-green">✓ Valid</span> : error ? <span className="text-neon-red">✗ Invalid</span> : <span className="text-text-disabled">⚪ No validation</span>}
+              {isValid ? <span className="text-neon-green">✓ 有效</span> : error ? <span className="text-neon-red">✗ 无效</span> : <span className="text-text-disabled">⚪ 未验证</span>}
             </div>
           </div>
         </div>
