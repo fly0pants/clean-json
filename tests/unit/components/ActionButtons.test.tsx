@@ -199,7 +199,7 @@ describe('ActionButtons', () => {
     it('should render full text buttons in normal mode', () => {
       render(<ActionButtons {...mockHandlers} />)
 
-      expect(screen.getByText(/format/i)).toBeInTheDocument()
+      expect(screen.getByText(/格式化/)).toBeInTheDocument()
     })
   })
 

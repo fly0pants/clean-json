@@ -1,13 +1,9 @@
 import React from 'react'
-import { Button } from '../Common/Button'
 
 export interface ThemeToggleProps {
   theme: 'light' | 'dark'
   onToggle: () => void
   disabled?: boolean
-  size?: 'small' | 'medium' | 'large'
-  variant?: 'primary' | 'secondary' | 'ghost'
-  showTooltip?: boolean
   className?: string
 }
 
@@ -15,70 +11,46 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   theme,
   onToggle,
   disabled = false,
-  size = 'medium',
-  variant = 'ghost',
-  showTooltip = false,
   className,
 }) => {
-  const getAriaLabel = () => {
-    return theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
-  }
-
-  const getTooltip = () => {
-    if (!showTooltip) return undefined
-    return theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
-  }
-
-  const renderIcon = () => {
-    if (theme === 'dark') {
-      // Sun icon for switching to light mode
-      return (
-        <svg
-          className="icon w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-          />
-        </svg>
-      )
-    } else {
-      // Moon icon for switching to dark mode
-      return (
-        <svg
-          className="icon w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-          />
-        </svg>
-      )
-    }
-  }
+  const isDark = theme === 'dark'
 
   return (
-    <Button
+    <button
       onClick={onToggle}
       disabled={disabled}
-      size={size}
-      variant={variant}
-      className={className}
-      aria-label={getAriaLabel()}
-      title={getTooltip()}
-      icon={renderIcon()}
-    />
+      className={`icon-btn relative overflow-hidden ${isDark ? 'text-neon-yellow' : 'text-neon-blue'} ${className}`}
+      aria-label={isDark ? '切换到浅色模式' : '切换到深色模式'}
+      title={isDark ? '浅色模式' : '深色模式'}
+    >
+      <div className="relative w-5 h-5">
+        {/* Sun icon */}
+        <svg
+          className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+            isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 rotate-90 scale-50'
+          }`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <circle cx="12" cy="12" r="5" />
+          <path strokeLinecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+        
+        {/* Moon icon */}
+        <svg
+          className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+            isDark ? 'opacity-0 -rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'
+          }`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      </div>
+    </button>
   )
 }

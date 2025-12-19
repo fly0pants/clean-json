@@ -43,17 +43,29 @@ function App() {
   const { setOutput, updateStats, setValidation } = useEditorStore()
   const { items: historyItems, addItem, deleteItem, clearHistory } = useHistoryStore()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isLoaded, setIsLoaded] = useState(false)
 
+  // Apply theme to body
   useEffect(() => {
     document.body.className = theme
   }, [theme])
+
+  // Initialize stats on load (for remembered input)
+  useEffect(() => {
+    if (!isLoaded && input) {
+      updateStats(input, output)
+      setIsLoaded(true)
+    } else if (!isLoaded) {
+      setIsLoaded(true)
+    }
+  }, [input, output, isLoaded, updateStats])
 
   const editorTheme = theme === 'dark' ? 'vs-dark' : 'light'
 
   const editorOptions = {
     minimap: { enabled: false },
-    fontSize: 14,
-    fontFamily: 'Fira Code, JetBrains Mono, Monaco, Consolas, monospace',
+    fontSize: 13,
+    fontFamily: 'JetBrains Mono, Fira Code, Monaco, Consolas, monospace',
     lineNumbers: 'on' as const,
     rulers: [],
     wordWrap: 'on' as const,
@@ -63,45 +75,54 @@ function App() {
     tabSize: 2,
     formatOnPaste: true,
     formatOnType: false,
+    renderLineHighlight: 'line' as const,
+    cursorBlinking: 'smooth' as const,
+    smoothScrolling: true,
+    padding: { top: 12, bottom: 12 },
   }
 
   const handleFormat = () => {
     format()
-    if (output) {
-      addItem(output)
+    const currentOutput = useEditorStore.getState().output
+    if (currentOutput) {
+      addItem(currentOutput)
       toast.success('JSON 格式化成功!')
     }
   }
 
   const handleCompress = () => {
     compress()
-    if (output) {
-      addItem(output)
+    const currentOutput = useEditorStore.getState().output
+    if (currentOutput) {
+      addItem(currentOutput)
       toast.success('JSON 压缩成功!')
     }
   }
 
   const handleStringToObject = () => {
     convertStringToObject()
-    if (output) {
-      addItem(output)
+    const currentOutput = useEditorStore.getState().output
+    if (currentOutput) {
+      addItem(currentOutput)
       toast.success('已转换为对象!')
     }
   }
 
   const handleObjectToString = () => {
     convertObjectToString()
-    if (output) {
-      addItem(output)
+    const currentOutput = useEditorStore.getState().output
+    if (currentOutput) {
+      addItem(currentOutput)
       toast.success('已转换为字符串!')
     }
   }
 
   const handleAutoConvert = () => {
     autoConvert()
-    if (output) {
-      addItem(output)
-      toast.success('自动转换成功!')
+    const currentOutput = useEditorStore.getState().output
+    if (currentOutput) {
+      addItem(currentOutput)
+      toast.success('智能转换成功!')
     }
   }
 
@@ -262,37 +283,71 @@ function App() {
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-primary-bg text-text-primary">
-      <Toaster position="top-right" />
-      <header className="flex h-16 items-center justify-between border-b border-border-default bg-primary-surface px-4 sm:px-6">
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          duration: 2000,
+          style: {
+            background: 'var(--color-bg-surface)',
+            color: 'var(--color-text-primary)',
+            border: '1px solid var(--color-border-default)',
+            borderRadius: '0.5rem',
+            fontSize: '0.875rem',
+          },
+          success: {
+            iconTheme: {
+              primary: 'var(--color-neon-green)',
+              secondary: 'white',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: 'var(--color-neon-red)',
+              secondary: 'white',
+            },
+          },
+        }}
+      />
+      
+      {/* Header */}
+      <header className="flex h-14 items-center justify-between border-b border-border-default bg-primary-surface px-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-pink text-xl sm:text-2xl font-bold text-white shadow-glow-blue">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple text-lg font-bold text-white shadow-lg">
               {'{}'}
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-neon-blue">Clean JSON</h1>
-              <p className="text-xs text-text-secondary">Format & Validate with Style</p>
+              <h1 className="text-base font-bold text-gradient">Clean JSON</h1>
+              <p className="text-[10px] text-text-secondary -mt-0.5">在线 JSON 格式化工具</p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1">
           <button
             onClick={toggleAutoFormat}
-            className={`btn-ghost flex items-center gap-2 text-xs sm:text-sm ${autoFormat ? 'text-neon-green' : 'text-text-secondary'}`}
+            className={`icon-btn relative ${autoFormat ? 'text-neon-green' : 'text-text-secondary'}`}
             aria-label="Toggle auto format"
             title={`自动格式化: ${autoFormat ? '开启' : '关闭'}`}
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span className="hidden md:inline">{autoFormat ? '自动' : '手动'}</span>
+            {autoFormat && <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-neon-green rounded-full" />}
           </button>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="btn-ghost relative" aria-label="Toggle history panel">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)} 
+            className={`icon-btn relative ${sidebarOpen ? 'text-neon-blue' : 'text-text-secondary'}`}
+            aria-label="Toggle history panel"
+            title="历史记录"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
             </svg>
             {historyItems.length > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-neon-pink text-xs font-semibold text-white">{historyItems.length}</span>
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-neon-pink text-[10px] font-semibold text-white">
+                {historyItems.length > 9 ? '9+' : historyItems.length}
+              </span>
             )}
           </button>
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
@@ -300,8 +355,8 @@ function App() {
       </header>
 
       {/* Toolbar */}
-      <div className="border-b border-border-default bg-primary-surface px-2 sm:px-6 py-3 overflow-x-auto">
-        <div className="flex flex-wrap items-center gap-4">
+      <div className="border-b border-border-default bg-primary-surface/80 backdrop-blur-sm px-3 py-2 overflow-x-auto">
+        <div className="flex items-center gap-3">
           <ActionButtons
             onFormat={handleFormat}
             onCompress={handleCompress}
@@ -310,7 +365,7 @@ function App() {
             onAutoConvert={handleAutoConvert}
             onClear={handleClear}
           />
-          <div className="hidden sm:block w-px h-8 bg-border-default" />
+          <div className="divider hidden md:block" />
           <UtilityButtons
             onCopy={handleCopy}
             onDownload={handleDownload}
@@ -325,42 +380,140 @@ function App() {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col min-w-0">
           <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-            <div className="flex flex-1 flex-col border-b md:border-b-0 md:border-r border-border-default min-h-[300px] md:min-h-0">
-              <div className="flex items-center justify-between border-b border-border-default bg-primary-surface px-4 py-2">
-                <h2 className="text-sm font-semibold text-text-secondary">输入</h2>
-                <span className="text-xs text-text-disabled hidden sm:inline">在此粘贴或输入 JSON</span>
+            {/* Input Panel */}
+            <div className="flex flex-1 flex-col border-b md:border-b-0 md:border-r border-border-default min-h-[250px] md:min-h-0">
+              <div className="panel-header">
+                <div className="flex items-center gap-2">
+                  <svg className="h-4 w-4 text-neon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <h2 className="text-sm font-medium text-text-primary">输入</h2>
+                </div>
+                <span className="text-xs text-text-disabled hidden sm:block">在此粘贴或输入 JSON</span>
               </div>
-              <div className="flex-1 overflow-hidden">
-                <Editor height="100%" language="json" value={input} onChange={(value) => setInput(value || '')} theme={editorTheme} options={editorOptions} />
+              <div className="flex-1 overflow-hidden bg-primary-bg">
+                <Editor 
+                  height="100%" 
+                  language="json" 
+                  value={input} 
+                  onChange={(value) => setInput(value || '')} 
+                  theme={editorTheme} 
+                  options={editorOptions}
+                  loading={
+                    <div className="flex items-center justify-center h-full">
+                      <div className="flex items-center gap-2 text-text-secondary">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span className="text-sm">加载编辑器...</span>
+                      </div>
+                    </div>
+                  }
+                />
               </div>
             </div>
-            <div className="flex flex-1 flex-col min-h-[300px] md:min-h-0">
-              <div className="flex items-center justify-between border-b border-border-default bg-primary-surface px-4 py-2">
-                <h2 className="text-sm font-semibold text-text-secondary">输出</h2>
-                {error && <div className="flex items-center gap-2 text-xs text-neon-red truncate max-w-[200px] sm:max-w-none"><svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="hidden sm:inline">错误: {error.message}</span><span className="sm:hidden">错误</span></div>}
-                {isValid && !error && output && <div className="flex items-center gap-2 text-xs text-neon-green"><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="hidden sm:inline">有效 JSON</span><span className="sm:hidden">✓</span></div>}
+
+            {/* Output Panel */}
+            <div className="flex flex-1 flex-col min-h-[250px] md:min-h-0">
+              <div className="panel-header">
+                <div className="flex items-center gap-2">
+                  <svg className="h-4 w-4 text-neon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h2 className="text-sm font-medium text-text-primary">输出</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  {error && (
+                    <div className="badge badge-error flex items-center gap-1">
+                      <span className="status-dot status-dot-error" />
+                      <span className="hidden sm:inline truncate max-w-[150px]">{error.message}</span>
+                      <span className="sm:hidden">错误</span>
+                    </div>
+                  )}
+                  {isValid && !error && output && (
+                    <div className="badge badge-success flex items-center gap-1">
+                      <span className="status-dot status-dot-success" />
+                      <span className="hidden sm:inline">有效 JSON</span>
+                      <span className="sm:hidden">✓</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex-1 overflow-hidden">
-                <Editor height="100%" language="json" value={output} onChange={(value) => setOutput(value || '')} theme={editorTheme} options={editorOptions} />
+              <div className="flex-1 overflow-hidden bg-primary-bg">
+                <Editor 
+                  height="100%" 
+                  language="json" 
+                  value={output} 
+                  onChange={(value) => setOutput(value || '')} 
+                  theme={editorTheme} 
+                  options={{...editorOptions, readOnly: false}}
+                  loading={
+                    <div className="flex items-center justify-center h-full">
+                      <div className="flex items-center gap-2 text-text-secondary">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span className="text-sm">加载编辑器...</span>
+                      </div>
+                    </div>
+                  }
+                />
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-border-default bg-primary-sidebar px-4 sm:px-6 py-2 text-xs text-text-secondary">
-            <div className="flex items-center gap-4 sm:gap-6">
-              <span>行数: {stats.lines}</span>
-              <span>大小: {formatBytes(stats.size)}</span>
+
+          {/* Status Bar */}
+          <div className="flex items-center justify-between border-t border-border-default bg-primary-sidebar px-4 py-1.5 text-xs">
+            <div className="flex items-center gap-4 text-text-secondary">
+              <span className="flex items-center gap-1.5">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                {stats.lines} 行
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z" />
+                </svg>
+                {formatBytes(stats.size)}
+              </span>
             </div>
-            <div className="flex items-center gap-2">
-              {isValid ? <span className="text-neon-green">✓ 有效</span> : error ? <span className="text-neon-red">✗ 无效</span> : <span className="text-text-disabled">⚪ 未验证</span>}
+            <div className="flex items-center gap-1.5">
+              {isValid ? (
+                <span className="flex items-center gap-1 text-neon-green">
+                  <span className="status-dot status-dot-success" />
+                  有效
+                </span>
+              ) : error ? (
+                <span className="flex items-center gap-1 text-neon-red">
+                  <span className="status-dot status-dot-error" />
+                  无效
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-text-disabled">
+                  <span className="status-dot status-dot-idle" />
+                  待验证
+                </span>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-border-default bg-primary-sidebar max-h-[300px] lg:max-h-none">
-            <HistoryPanel items={historyItems} onItemClick={handleHistoryItemClick} onItemDelete={handleHistoryItemDelete} onClearAll={handleClearAllHistory} />
+          <aside className="w-full lg:w-72 border-t lg:border-t-0 lg:border-l border-border-default bg-primary-sidebar max-h-[280px] lg:max-h-none fade-in">
+            <HistoryPanel 
+              items={historyItems} 
+              onItemClick={handleHistoryItemClick} 
+              onItemDelete={handleHistoryItemDelete} 
+              onClearAll={handleClearAllHistory} 
+            />
           </aside>
         )}
       </div>
