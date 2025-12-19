@@ -371,11 +371,9 @@ describe('EditorStore', () => {
 
       const stored = JSON.parse(localStorage.getItem('clean-json-editor-settings')!)
 
-      expect(stored.state).toEqual({
-        indentSize: 4,
-        indentType: 'tab',
-        sortKeys: true,
-      })
+      expect(stored.state.indentSize).toBe(4)
+      expect(stored.state.indentType).toBe('tab')
+      expect(stored.state.sortKeys).toBe(true)
       expect(stored.version).toBe(0)
     })
   })

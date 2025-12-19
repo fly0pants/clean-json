@@ -26,17 +26,31 @@ describe('ThemeToggle', () => {
       expect(button).toHaveAttribute('aria-label')
     })
 
-    it('should render light mode icon when theme is dark', () => {
+    it('should render sun icon when theme is dark (to switch to light)', () => {
       const { container } = render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
 
       // Should show icon to switch TO light mode
-      expect(container.querySelector('svg') || container.querySelector('.icon')).toBeInTheDocument()
+      expect(container.querySelector('svg')).toBeInTheDocument()
     })
 
-    it('should render dark mode icon when theme is light', () => {
+    it('should render moon icon when theme is light (to switch to dark)', () => {
       const { container } = render(<ThemeToggle theme="light" onToggle={mockOnToggle} />)
 
-      expect(container.querySelector('svg') || container.querySelector('.icon')).toBeInTheDocument()
+      expect(container.querySelector('svg')).toBeInTheDocument()
+    })
+
+    it('should have yellow color when dark theme', () => {
+      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
+
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('text-neon-yellow')
+    })
+
+    it('should have blue color when light theme', () => {
+      render(<ThemeToggle theme="light" onToggle={mockOnToggle} />)
+
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('text-neon-blue')
     })
   })
 
@@ -86,51 +100,19 @@ describe('ThemeToggle', () => {
     })
   })
 
-  describe('Sizes', () => {
-    it('should render medium size by default', () => {
-      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
-
-      const button = screen.getByRole('button')
-      expect(button).toHaveClass('btn-medium')
-    })
-
-    it('should support small size', () => {
-      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} size="small" />)
-
-      const button = screen.getByRole('button')
-      expect(button).toHaveClass('btn-small')
-    })
-
-    it('should support large size', () => {
-      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} size="large" />)
-
-      const button = screen.getByRole('button')
-      expect(button).toHaveClass('btn-large')
-    })
-  })
-
-  describe('Variants', () => {
-    it('should render ghost variant by default', () => {
-      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
-
-      const button = screen.getByRole('button')
-      expect(button).toHaveClass('btn-ghost')
-    })
-
-    it('should support custom variant', () => {
-      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} variant="secondary" />)
-
-      const button = screen.getByRole('button')
-      expect(button).toHaveClass('btn-secondary')
-    })
-  })
-
   describe('Custom Styling', () => {
     it('should accept custom className', () => {
       render(<ThemeToggle theme="dark" onToggle={mockOnToggle} className="custom-toggle" />)
 
       const button = screen.getByRole('button')
       expect(button).toHaveClass('custom-toggle')
+    })
+
+    it('should have icon-btn class', () => {
+      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
+
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('icon-btn')
     })
   })
 
@@ -142,13 +124,22 @@ describe('ThemeToggle', () => {
       expect(button).toHaveAccessibleName()
     })
 
-    it('should have aria-label describing action', () => {
+    it('should have aria-label describing action in Chinese', () => {
       render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
 
       const button = screen.getByRole('button')
       const ariaLabel = button.getAttribute('aria-label')
       expect(ariaLabel).toBeTruthy()
-      expect(ariaLabel?.toLowerCase()).toContain('theme')
+      expect(ariaLabel).toContain('浅色模式')
+    })
+
+    it('should have aria-label for light theme', () => {
+      render(<ThemeToggle theme="light" onToggle={mockOnToggle} />)
+
+      const button = screen.getByRole('button')
+      const ariaLabel = button.getAttribute('aria-label')
+      expect(ariaLabel).toBeTruthy()
+      expect(ariaLabel).toContain('深色模式')
     })
 
     it('should be keyboard focusable', () => {
@@ -168,28 +159,40 @@ describe('ThemeToggle', () => {
   })
 
   describe('Tooltip', () => {
-    it('should show tooltip when showTooltip is true', () => {
-      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} showTooltip />)
+    it('should have title attribute for tooltip', () => {
+      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
 
       const button = screen.getByRole('button')
       expect(button).toHaveAttribute('title')
     })
 
-    it('should not show tooltip by default', () => {
+    it('should show correct tooltip for dark theme', () => {
       render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
 
       const button = screen.getByRole('button')
-      expect(button).not.toHaveAttribute('title')
+      expect(button.getAttribute('title')).toBe('浅色模式')
+    })
+
+    it('should show correct tooltip for light theme', () => {
+      render(<ThemeToggle theme="light" onToggle={mockOnToggle} />)
+
+      const button = screen.getByRole('button')
+      expect(button.getAttribute('title')).toBe('深色模式')
     })
   })
 
   describe('Animation', () => {
-    it('should have transition classes for smooth animation', () => {
-      render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
+    it('should have SVG icons with transition classes', () => {
+      const { container } = render(<ThemeToggle theme="dark" onToggle={mockOnToggle} />)
 
-      const button = screen.getByRole('button')
-      const classes = button.className
-      expect(classes).toMatch(/transition/)
+      const svgs = container.querySelectorAll('svg')
+      expect(svgs.length).toBe(2) // Sun and Moon icons
+      
+      // Check that SVGs have transition classes via class attribute
+      svgs.forEach(svg => {
+        const classAttr = svg.getAttribute('class') || ''
+        expect(classAttr).toContain('transition')
+      })
     })
   })
 })

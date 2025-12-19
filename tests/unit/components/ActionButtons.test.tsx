@@ -32,7 +32,7 @@ describe('ActionButtons', () => {
     it('should render as button group', () => {
       const { container } = render(<ActionButtons {...mockHandlers} />)
 
-      const buttonGroup = container.querySelector('.action-buttons')
+      const buttonGroup = container.querySelector('[role="group"]')
       expect(buttonGroup).toBeInTheDocument()
     })
 
@@ -199,7 +199,7 @@ describe('ActionButtons', () => {
     it('should render full text buttons in normal mode', () => {
       render(<ActionButtons {...mockHandlers} />)
 
-      expect(screen.getByText(/format/i)).toBeInTheDocument()
+      expect(screen.getByText(/格式化/)).toBeInTheDocument()
     })
   })
 
@@ -217,9 +217,8 @@ describe('ActionButtons', () => {
         <ActionButtons {...mockHandlers} className="custom-class" />
       )
 
-      const buttonGroup = container.querySelector('.action-buttons')
+      const buttonGroup = container.querySelector('[role="group"]')
       expect(buttonGroup).toHaveClass('custom-class')
-      expect(buttonGroup).toHaveClass('action-buttons')
     })
   })
 

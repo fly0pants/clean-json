@@ -130,12 +130,14 @@ export const useEditorStore = create<EditorState>()(
     }),
     {
       name: 'clean-json-editor-settings',
-      // Only persist format options, not content or errors
+      // Persist format options and input content for memory feature
       partialize: (state) => ({
         indentSize: state.indentSize,
         indentType: state.indentType,
         sortKeys: state.sortKeys,
         autoFormat: state.autoFormat,
+        input: state.input, // Remember user's last input
+        output: state.output, // Remember user's last output
       }),
     }
   )
